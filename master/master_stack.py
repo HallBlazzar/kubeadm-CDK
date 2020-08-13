@@ -20,11 +20,12 @@ class MasterStack(core.Stack):
 
         user_data = self.__get_user_data()
 
-        master_instance = InstanceConstructor(
+        self.master_instance = InstanceConstructor(
             scope=self, instance_construction_properties=instance_construction_properties, user_data=user_data
         ).construct_private_node("master")
-        master_instance.add_security_group(security_group)
-        self.__grant_access_to_asset(master_instance)
+
+        self.master_instance.add_security_group(security_group)
+        self.__grant_access_to_asset(self.master_instance)
 
     def __get_user_data(self) -> UserData:
         user_data = UserData.for_linux()

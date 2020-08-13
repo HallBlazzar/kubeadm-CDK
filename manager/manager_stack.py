@@ -11,11 +11,13 @@ class ManagerStack(core.Stack):
         self, scope: core.Construct, id: str,
         instance_construction_properties: InstanceConstructionProperties,
         deployment_asset_stack: DeploymentAssetStack, security_group: SecurityGroup,
+        master_instance_private_ip: str,
         **kwargs
     ):
         super().__init__(scope, id, **kwargs)
 
         self.__deployment_asset_stack = deployment_asset_stack
+        self.__master_instance_private_ip = master_instance_private_ip
 
         user_data = self.__get_user_data()
 
@@ -30,15 +32,30 @@ class ManagerStack(core.Stack):
         user_data = UserData.for_linux()
 
         AttachAWSCliInstallation.execute(user_data)
+
+        local_deploy_manager_script = LocalAssetCreator.execute(target_asset=self.__deployment_asset_stack.deploy_manager_script_asset, user_data=user_data)
+
         local_public_key = LocalAssetCreator.execute(target_asset=self.__deployment_asset_stack.public_key_asset, user_data=user_data)
         local_create_user_script = LocalAssetCreator.execute(target_asset=self.__deployment_asset_stack.create_user_script_asset, user_data=user_data)
+        local_check_master_ready_script = LocalAssetCreator.execute(target_asset=self.__deployment_asset_stack.check_master_ready_script_asset, user_data=user_data)
+        local_private_key = LocalAssetCreator.execute(target_asset=self.__deployment_asset_stack.private_key_asset, user_data=user_data)
 
         user_data.add_execute_file_command(
-            file_path=local_create_user_script,
-            arguments="{}".format(local_public_key)
+            file_path=local_deploy_manager_script,
+            arguments="{} {} {} {} {}".format(
+                local_public_key, local_create_user_script, local_check_master_ready_script,
+                self.__master_instance_private_ip, local_private_key
+            )
         )
 
         return user_data
 
     def __grant_access_to_asset(self, manager_instance):
-        AccessGranter.execute(manager_instance, self.__deployment_asset_stack.public_key_asset, self.__deployment_asset_stack.create_user_script_asset)
+        AccessGranter.execute(
+            manager_instance,
+            self.__deployment_asset_stack.public_key_asset,
+            self.__deployment_asset_stack.create_user_script_asset,
+            self.__deployment_asset_stack.deploy_manager_script_asset,
+            self.__deployment_asset_stack.check_master_ready_script_asset,
+            self.__deployment_asset_stack.private_key_asset
+        )

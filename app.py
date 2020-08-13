@@ -13,6 +13,7 @@ from deployment_asset.deployment_asset_stack import DeploymentAssetStack
 from utils.config_loader import ConfigLoader
 import os
 from utils.kubeadm_config_creator import KubeadmConfigCreator
+from utils.file_reader import FileReader
 
 config = ConfigLoader(config_path="resource/config/config.json").fetch_config_from_json_file()
 
@@ -41,14 +42,10 @@ deployment_asset_stack = DeploymentAssetStack(
         token_path=os.path.join("resource", "key", "token.txt")
     ).execute(),
     deploy_worker_script_path=os.path.join("resource", "script", "deploy_worker.sh"),
+    check_master_ready_script_path=os.path.join("resource", "script", "check_master_ready.sh"),
+    deploy_manager_script_asset=os.path.join("resource", "script", "deploy_manager.sh"),
+    private_key_path=os.path.join("resource", "key", "id_rsa"),
     env=env
-)
-
-manager_stack = ManagerStack(
-    scope=app, id="{}Manager".format(config["ENVIRONMENT_NAME"]),
-    instance_construction_properties=instance_construction_properties,
-    deployment_asset_stack=deployment_asset_stack,
-    security_group=cluster_security_group_stack.manager_security_group, env=env
 )
 
 master_stack = MasterStack(
@@ -58,12 +55,23 @@ master_stack = MasterStack(
     security_group=cluster_security_group_stack.master_security_group, env=env
 )
 
+manager_stack = ManagerStack(
+    scope=app, id="{}Manager".format(config["ENVIRONMENT_NAME"]),
+    instance_construction_properties=instance_construction_properties,
+    deployment_asset_stack=deployment_asset_stack,
+    master_instance_private_ip=master_stack.master_instance.instance_private_ip,
+    security_group=cluster_security_group_stack.manager_security_group, env=env
+)
+
 worker_stack = WorkerStack(
     scope=app, id="{}Worker".format(config["ENVIRONMENT_NAME"]),
     instance_construction_properties=instance_construction_properties,
     deployment_asset_stack=deployment_asset_stack,
     security_group=cluster_security_group_stack.worker_security_group,
-    number_of_worker=config["NUMBER_OF_WORKER"], env=env
+    number_of_worker=config["NUMBER_OF_WORKER"],
+    token=FileReader.execute(os.path.join("resource", "key", "token.txt")),
+    master_instance_private_ip=master_stack.master_instance.instance_private_ip,
+    env=env
 )
 
 app.synth()
