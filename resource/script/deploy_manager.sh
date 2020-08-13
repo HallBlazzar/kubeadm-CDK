@@ -25,8 +25,9 @@ if [ $wait_status -eq 0 ]; then
     chmod 600 "$PRIVATE_KEY_FILE"
     scp -i "$PRIVATE_KEY_FILE" -o "ForwardAgent yes" manager@"$MASTER_IP_ADDRESS":/home/manager/config /home/manager/.kube/config
     chown manager /home/manager/.kube/config
+    kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml --kubeconfig /home/manager/.kube/config
 else
     echo "wait for master node ready timeout."
 fi
 
-# todo: remove private key
+rm "$PRIVATE_KEY_FILE"

@@ -53,26 +53,7 @@ function generate_token_file_if_not_exist() {
 #    ssh -A manager@"$manager_public_ip_address" "ssh-keyscan $master_private_ip_address >> ~/.ssh/known_hosts"
 #}
 
-#function wait_until_control_plane_ready() {
-#    echo "wait for control plane ready(timeout = 240 s)"
-#    result=1
-#
-#    for _ in {1..48}
-#    do
-#        ssh -A manager@"$manager_public_ip_address" nc -zv -w 1 "$master_private_ip_address" 6443
-#        result=$?
-#
-#        if [ $result -ne 0 ]; then
-#          echo "control plane not ready, wait for 5 second to do check again"
-#          sleep 5
-#        else
-#          break
-#        fi
-#
-#    done
-#
-#    return $result
-#}
+
 
 KEY_DIR=resource/key
 PRIVATE_KEY_PATH=$KEY_DIR/id_rsa
@@ -96,15 +77,3 @@ cdk deploy '*' --require-approval never
 #
 #echo "register hosts"
 #register_hosts "$manager_public_ip_address" "$master_private_ip_address"
-#
-#echo "wait for control plane ready(timeout = 240 s)"
-#wait_until_control_plane_ready
-#wait_status=$?
-#
-#if [ $wait_status -ne 0 ]; then
-#    echo "deploy master failed"
-#else
-#    echo "deploy master success"
-#    ssh -A manager@$manager_public_ip_address "mkdir -p /home/manager/.kube"
-#    ssh -A manager@$manager_public_ip_address "scp -o \"ForwardAgent yes\" manager@$master_private_ip_address:/home/manager/.kube/config"
-#fi
