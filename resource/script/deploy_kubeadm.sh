@@ -31,6 +31,8 @@ sudo apt-get update
 sudo apt-get install -y containerd.io
 containerd config default > /etc/containerd/config.toml
 systemctl restart containerd
+systemctl enable containerd
+
 
 # --- Install Kubeadm ---
 

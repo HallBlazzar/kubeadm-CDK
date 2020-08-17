@@ -9,6 +9,9 @@ CHECK_MASTER_READY_SCRIPT=$6
 
 bash "$CREATE_USER_SCRIPT" "$PUBLIC_KEY_FILE"
 
+apt-get update
+sudo apt-get install -y lvm2
+
 bash "$DEPLOY_KUBEADM_SCRIPT"
 
 bash "$CHECK_MASTER_READY_SCRIPT" "$MASTER_IP_ADDRESS"

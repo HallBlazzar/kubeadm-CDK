@@ -29,6 +29,7 @@ class VPCConstructor:
         vpc = Vpc(
             scope=scope,
             id="vpc",
+            cidr="172.16.0.0/16",
             subnet_configuration=subnet_configurations
         )
 

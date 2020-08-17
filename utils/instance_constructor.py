@@ -45,7 +45,7 @@ class InstanceConstructor:
             id=instance_id,
             instance_type=InstanceType(self.__instance_construction_properties.instance_type),
             machine_image=MachineImage().lookup(
-                name="ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200716", owners=["099720109477"]
+                name="ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200729", owners=["099720109477"]
             ),
             vpc=self.__instance_construction_properties.vpc,
             block_devices=block_device_list,

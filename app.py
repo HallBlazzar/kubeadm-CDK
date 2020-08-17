@@ -2,8 +2,8 @@
 
 from aws_cdk import core
 
-from vpc.vpc_stack import VpcStack
-from cluster_security_group.cluster_security_group_stack import ClusterSecurityGroupStack
+from vpc.vpc_stack_constructor import VpcStackConstructor
+from cluster_security_group.cluster_security_group_stack_constructor import ClusterSecurityGroupStackConstructor
 from manager.manager_stack import ManagerStack
 from master.master_stack import MasterStack
 from utils.instance_constructor import InstanceConstructionProperties
@@ -15,21 +15,18 @@ import os
 from utils.kubeadm_config_creator import KubeadmConfigCreator
 from utils.file_reader import FileReader
 
-config = ConfigLoader(config_path="resource/config/config.json").fetch_config_from_json_file()
+config = ConfigLoader(config_path=os.path.join("resource", "config", "config.json")).fetch_config_from_json_file()
 
 app = core.App()
 
 env = core.Environment(account=config["ACCOUNT"], region=config["REGION"])
 
-vpc_stack = VpcStack(scope=app, id="{}Vpc".format(config["ENVIRONMENT_NAME"]), env=env)
+vpc_stack = VpcStackConstructor(scope=app, env=env, config=config).execute()
 
-cluster_security_group_stack = ClusterSecurityGroupStack(
-    scope=app, id="{}SG".format(config["ENVIRONMENT_NAME"]), vpc=vpc_stack.vpc, env=env
-)
+cluster_security_group_stack = ClusterSecurityGroupStackConstructor(
+    scope=app, env=env, config=config, vpc_stack=vpc_stack
+).execute()
 
-instance_construction_properties = InstanceConstructionProperties(
-    vpc=vpc_stack.vpc, instance_type=config["INSTANCE_TYPE"], storage_size=config["STORAGE_SIZE"]
-)
 
 deployment_asset_stack = DeploymentAssetStack(
     scope=app, id="{}Assets".format(config["ENVIRONMENT_NAME"]),
@@ -45,7 +42,14 @@ deployment_asset_stack = DeploymentAssetStack(
     check_master_ready_script_path=os.path.join("resource", "script", "check_master_ready.sh"),
     deploy_manager_script_asset=os.path.join("resource", "script", "deploy_manager.sh"),
     private_key_path=os.path.join("resource", "key", "id_rsa"),
+    rook_pod_security_policy=os.path.join("resource", "rook", "pod-security-policy.yaml"),
+    ceph_file_system=os.path.join("resource", "rook", "ceph-file-system.yaml"),
+    storage_class=os.path.join("resource", "rook", "storage-class.yaml"),
     env=env
+)
+
+instance_construction_properties = InstanceConstructionProperties(
+    vpc=vpc_stack.vpc, instance_type=config["INSTANCE_TYPE"], storage_size=config["STORAGE_SIZE"]
 )
 
 master_stack = MasterStack(
@@ -60,7 +64,9 @@ manager_stack = ManagerStack(
     instance_construction_properties=instance_construction_properties,
     deployment_asset_stack=deployment_asset_stack,
     master_instance_private_ip=master_stack.master_instance.instance_private_ip,
-    security_group=cluster_security_group_stack.manager_security_group, env=env
+    security_group=cluster_security_group_stack.manager_security_group,
+    number_of_worker_node=config["NUMBER_OF_WORKER"],
+    env=env
 )
 
 worker_stack = WorkerStack(

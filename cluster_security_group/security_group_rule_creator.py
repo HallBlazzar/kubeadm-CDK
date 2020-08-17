@@ -78,7 +78,8 @@ class WorkerSecurityGroupRuleCreator(SecurityGroupRuleCreatorBase):
     def execute(self):
         self.__attach_api_server_control_rule()
         self.__attach_public_access_rule()
-        self.__attach_manager_full_access()
+        self.__attach_manager_full_access_rule()
+        self.__attach_inter_worker_access_rule()
 
     def __attach_api_server_control_rule(self):
         api_server_control_port = Port.tcp(port=10250)
@@ -90,7 +91,12 @@ class WorkerSecurityGroupRuleCreator(SecurityGroupRuleCreatorBase):
         public_access_port = Port.tcp_range(start_port=30000, end_port=32767)
         self._worker_security_group.connections.allow_from_any_ipv4(port_range=public_access_port)
 
-    def __attach_manager_full_access(self):
+    def __attach_manager_full_access_rule(self):
         self._worker_security_group.connections.allow_from(
             other=self._manager_security_group.connections, port_range=Port.all_traffic()
+        )
+
+    def __attach_inter_worker_access_rule(self):
+        self._worker_security_group.connections.allow_from(
+            other=self._worker_security_group.connections, port_range=Port.all_traffic()
         )

@@ -14,6 +14,9 @@ class DeploymentAssetStack(core.Stack):
         deploy_worker_script_path: str,
         check_master_ready_script_path: str,
         deploy_manager_script_asset: str,
+        rook_pod_security_policy: str,
+        ceph_file_system: str,
+        storage_class: str,
         **kwargs,
     ):
         super().__init__(scope, id, **kwargs)
@@ -27,3 +30,7 @@ class DeploymentAssetStack(core.Stack):
         self.deploy_worker_script_asset = Asset(scope=self, id="deploy_worker_script_asset", path=deploy_worker_script_path)
         self.check_master_ready_script_asset = Asset(scope=self, id="check_master_ready_script_asset", path=check_master_ready_script_path)
         self.deploy_manager_script_asset = Asset(scope=self, id="deploy_manager_script_asset", path=deploy_manager_script_asset)
+
+        self.rook_pod_security_policy_asset = Asset(scope=self, id="rook_pod_security_policy_asset", path=rook_pod_security_policy)
+        self.ceph_file_system_asset = Asset(scope=self, id="ceph_file_system_asset", path=ceph_file_system)
+        self.storage_class_asset = Asset(scope=self, id="storage_class_asset", path=storage_class)

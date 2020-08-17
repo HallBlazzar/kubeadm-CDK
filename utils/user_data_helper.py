@@ -17,7 +17,8 @@ class AttachAWSCliInstallation:
     def execute(user_data: UserData):
         user_data.add_commands(
             "apt-get update",
-            "apt-get install -y awscli"
+            "apt-get install -y awscli",
+            "aws configure set s3.signature_version s3v4"
         )
 
 

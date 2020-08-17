@@ -7,6 +7,9 @@ KUBEADM_CONFIG_FILE=$4
 
 bash "$CREATE_USER_SCRIPT" "$PUBLIC_KEY_FILE"
 
+apt-get update
+sudo apt-get install -y lvm2
+
 bash "$DEPLOY_KUBEADM_SCRIPT"
 
 kubeadm init --config "$KUBEADM_CONFIG_FILE" --upload-certs
