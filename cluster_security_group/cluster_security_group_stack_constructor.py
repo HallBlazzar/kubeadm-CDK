@@ -54,7 +54,7 @@ class ClusterSecurityGroupStackConstructor:
         self.__config = config
         self.__vpc_stack = vpc_stack
 
-    def execute(self):
+    def execute(self) -> ClusterSecurityGroupStack:
         return ClusterSecurityGroupStack(
             scope=self.__scope,
             id="{}SG".format(self.__config["ENVIRONMENT_NAME"]),

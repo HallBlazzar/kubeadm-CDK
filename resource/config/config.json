@@ -4,5 +4,8 @@
     "REGION": "ap-northeast-1",
     "INSTANCE_TYPE": "t3.large",
     "STORAGE_SIZE": 256,
-    "NUMBER_OF_WORKER": 3
+    "NUMBER_OF_WORKER": 3,
+    "IMAGE_ID": "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200729",
+    "IMAGE_OWNER": "099720109477",
+    "DEFAULT_KEY": "default-key"
 }

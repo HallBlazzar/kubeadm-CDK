@@ -1,58 +1,39 @@
 from aws_cdk.aws_ec2 import Instance
 from aws_cdk.aws_ec2 import InstanceType
 from aws_cdk.aws_ec2 import MachineImage
-from aws_cdk.aws_ec2 import Vpc
 from aws_cdk.aws_ec2 import BlockDevice, BlockDeviceVolume
 from aws_cdk.aws_ec2 import SubnetSelection
+
 from aws_cdk.core import Construct
-from aws_cdk.aws_ec2 import UserData
-
-
-class InstanceConstructionProperties:
-    def __init__(self, vpc: Vpc, instance_type: str, storage_size: int):
-        self.vpc = vpc
-        self.instance_type = instance_type
-        self.storage_size = storage_size
+from vpc.vpc_stack_constructor import VpcStack
 
 
 class InstanceConstructor:
     def __init__(
-        self, scope: Construct, instance_construction_properties: InstanceConstructionProperties, user_data: UserData
+        self,
+        scope: Construct,
+        config: dict,
+        vpc_stack: VpcStack,
+        selected_subnet: SubnetSelection,
+        instance_id: str
     ):
         self.__scope = scope
-        self.__instance_construction_properties = instance_construction_properties
-        self.__user_data = user_data
+        self.__vpc = vpc_stack.vpc
+        self.__instance_type = config["INSTANCE_TYPE"]
+        self.__storage_size = config["STORAGE_SIZE"]
+        self.__image_id = config["IMAGE_ID"]
+        self.__image_owner = config["IMAGE_OWNER"]
+        self.__selected_subnet = selected_subnet
+        self.__instance_id = instance_id
+        self.__default_key = config["DEFAULT_KEY"]
 
-    def construct_public_node(self, instance_id: str) -> Instance:
-        return self.construct_node_in_selected_subnet(
-            instance_id=instance_id, selected_subnet=SubnetSelection(
-                subnets=self.__instance_construction_properties.vpc.public_subnets
-            )
-        )
-
-    def construct_private_node(self, instance_id: str) -> Instance:
-        return self.construct_node_in_selected_subnet(
-            instance_id=instance_id, selected_subnet=SubnetSelection(
-                subnets=self.__instance_construction_properties.vpc.private_subnets
-            )
-        )
-
-    def construct_node_in_selected_subnet(self,  selected_subnet: SubnetSelection, instance_id: str) -> Instance:
+    def execute(self) -> Instance:
         block_device_list = self.__get_block_device_list()
 
-        instance = Instance(
-            scope=self.__scope,
-            id=instance_id,
-            instance_type=InstanceType(self.__instance_construction_properties.instance_type),
-            machine_image=MachineImage().lookup(
-                name="ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200729", owners=["099720109477"]
-            ),
-            vpc=self.__instance_construction_properties.vpc,
-            block_devices=block_device_list,
-            vpc_subnets=selected_subnet,
-            user_data=self.__user_data,
-            key_name="default-key"
-        )
+        if self.__default_key is None:
+            instance = self.__get_instance_without_default_key(block_device_list)
+        else:
+            instance = self.__get_instance_with_default_key(block_device_list)
 
         return instance
 
@@ -60,8 +41,77 @@ class InstanceConstructor:
         block_device_list = [
             BlockDevice(
                 device_name="/dev/xvda",
-                volume=BlockDeviceVolume.ebs(self.__instance_construction_properties.storage_size)
+                volume=BlockDeviceVolume.ebs(self.__storage_size)
             )
         ]
 
         return block_device_list
+
+    def __get_instance_without_default_key(self, block_device_list):
+        return Instance(
+            scope=self.__scope,
+            id=self.__instance_id,
+            instance_type=InstanceType(self.__instance_type),
+            machine_image=MachineImage().lookup(name=self.__image_id, owners=[self.__image_owner]),
+            vpc=self.__vpc,
+            block_devices=block_device_list,
+            vpc_subnets=self.__selected_subnet
+        )
+
+    def __get_instance_with_default_key(self, block_device_list):
+        return Instance(
+            scope=self.__scope,
+            id=self.__instance_id,
+            instance_type=InstanceType(self.__instance_type),
+            machine_image=MachineImage().lookup(name=self.__image_id, owners=[self.__image_owner]),
+            vpc=self.__vpc,
+            block_devices=block_device_list,
+            vpc_subnets=self.__selected_subnet,
+            key_name=self.__default_key
+        )
+
+
+class PublicInstanceConstructor:
+    def __init__(
+        self,
+        scope: Construct,
+        config: dict,
+        vpc_stack: VpcStack,
+        instance_id: str
+    ):
+        self.__scope = scope
+        self.__config = config
+        self.__vpc_stack = vpc_stack
+        self.__instance_id = instance_id
+
+    def execute(self) -> Instance:
+        return InstanceConstructor(
+            scope=self.__scope,
+            config=self.__config,
+            vpc_stack=self.__vpc_stack,
+            instance_id=self.__instance_id,
+            selected_subnet=SubnetSelection(subnets=self.__vpc_stack.vpc.public_subnets)
+        ).execute()
+
+
+class PrivateInstanceConstructor:
+    def __init__(
+        self,
+        scope: Construct,
+        config: dict,
+        vpc_stack: VpcStack,
+        instance_id: str
+    ):
+        self.__scope = scope
+        self.__config = config
+        self.__vpc_stack = vpc_stack
+        self.__instance_id = instance_id
+
+    def execute(self) -> Instance:
+        return InstanceConstructor(
+            scope=self.__scope,
+            config=self.__config,
+            vpc_stack=self.__vpc_stack,
+            instance_id=self.__instance_id,
+            selected_subnet=SubnetSelection(subnets=self.__vpc_stack.vpc.private_subnets)
+        ).execute()

@@ -1,4 +1,12 @@
 
+# kubeadm-CDK
+
+This is a project uses AWS CDK and [kubeamin toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) to deploy
+
+
+
+
+
 # Welcome to your CDK Python project!
 
 This is a blank project for Python development with CDK.
