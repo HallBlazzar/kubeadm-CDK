@@ -18,7 +18,4 @@ do
     fi
 done
 
-echo "wait for additional 300 seconds to ensure master node initialized finished."
-sleep 300
-
 exit $result

@@ -38,7 +38,7 @@ class WorkerUserDataConstructor:
 
         self.__user_data.add_execute_file_command(
             file_path=local_deploy_worker_script,
-            arguments="{} {} {} {} {} {}".format(
+            arguments="{} {} {} {} {} {} &".format(
                 local_public_key,
                 local_create_user_script,
                 local_deploy_kubeadm_script,

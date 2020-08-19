@@ -88,7 +88,7 @@ function deploy_rook_ceph() {
     deploy_finish=""
     deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
 
-    while [ "$deploy_status" = "$deploy_finish" ]; do
+    while [ "$deploy_status" != "$deploy_finish" ]; do
         echo "rook components haven't ready, wait 5 second for next verification"
         sleep 5
         deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
@@ -143,6 +143,10 @@ NUMBER_OF_WORKER_NODES=$9
 REMOTE_KUBECONFIG_FILE_PATH=/home/manager/config
 LOCAL_KUBECONFIG_DIR_PATH=/home/manager/.kube
 LOCAL_KUBECONFIG_FILE_PATH=$LOCAL_KUBECONFIG_DIR_PATH/config
+
+echo "wait until cloud-init finished"
+cloud-init status --wait
+echo "cloud-init finished, start deploy k8s components"
 
 bash "$CREATE_USER_SCRIPT" "$PUBLIC_KEY_FILE"
 

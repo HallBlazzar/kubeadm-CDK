@@ -5,6 +5,12 @@ bootstrapTokens:
     description: "kubeadm bootstrap token"
     ttl: "24h"
 
+nodeRegistration:
+  taints:
+  - key: "kubeadmNode"
+    value: "master"
+    effect: "NoSchedule"
+
 ---
 
 apiVersion: kubeadm.k8s.io/v1beta2

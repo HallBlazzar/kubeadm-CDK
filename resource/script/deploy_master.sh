@@ -5,6 +5,10 @@ CREATE_USER_SCRIPT=$2
 DEPLOY_KUBEADM_SCRIPT=$3
 KUBEADM_CONFIG_FILE=$4
 
+echo "wait until cloud-init finished"
+cloud-init status --wait
+echo "cloud-init finished, start deploy master node components"
+
 bash "$CREATE_USER_SCRIPT" "$PUBLIC_KEY_FILE"
 
 apt-get update
