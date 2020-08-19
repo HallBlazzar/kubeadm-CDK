@@ -86,12 +86,12 @@ function deploy_rook_ceph() {
     kubectl create -f $ceph_manifest_path/cluster.yaml --kubeconfig "$local_kubeconfig_file_path"
 
     deploy_finish=""
-    deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
+    deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running,status.phase!=Succeeded --kubeconfig "$local_kubeconfig_file_path")
 
     while [ "$deploy_status" != "$deploy_finish" ]; do
         echo "rook components haven't ready, wait 5 second for next verification"
         sleep 5
-        deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
+        deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running,status.phase!=Succeeded --kubeconfig "$local_kubeconfig_file_path")
     done
 }
 
@@ -105,12 +105,12 @@ function create_default_file_system() {
     kubectl create -f "$file_system_definition" --kubeconfig "$local_kubeconfig_file_path"
 
     deploy_finish=""
-    deploy_status=$(kubectl get pods -l app=rook-ceph-mds -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
+    deploy_status=$(kubectl get pods -l app=rook-ceph-mds -n rook-ceph --field-selector status.phase!=Running,status.phase!=Succeeded --kubeconfig "$local_kubeconfig_file_path")
 
     while [ "$deploy_status" != "$deploy_finish" ]; do
         echo "rook ceph file system haven't ready, wait 5 second for next verification"
         sleep 5
-        deploy_status=$(kubectl get pods -l app=rook-ceph-mds -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
+        deploy_status=$(kubectl get pods -l app=rook-ceph-mds -n rook-ceph --field-selector status.phase!=Running,status.phase!=Succeeded --kubeconfig "$local_kubeconfig_file_path")
     done
 
     echo "deploy storage class"
