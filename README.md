@@ -50,7 +50,7 @@ The following K8s resource will be created as Pods in cluster:
 3. Create configuration based on configuration template.
 
    ```
-   cp resource/config.json.sample resource/config.json
+   cp resource/config/config.json.sample resource/config/config.json
    ```
 
 4. Replace value of the following keys in `config.json` :
