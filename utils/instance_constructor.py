@@ -40,7 +40,7 @@ class InstanceConstructor:
     def __get_block_device_list(self):
         block_device_list = [
             BlockDevice(
-                device_name="/dev/xvda",
+                device_name="/dev/sda1",
                 volume=BlockDeviceVolume.ebs(self.__storage_size)
             )
         ]
