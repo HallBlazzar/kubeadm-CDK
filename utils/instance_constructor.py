@@ -42,6 +42,10 @@ class InstanceConstructor:
             BlockDevice(
                 device_name="/dev/sda1",
                 volume=BlockDeviceVolume.ebs(self.__storage_size)
+            ),
+            BlockDevice(
+                device_name="/dev/sdb",
+                volume=BlockDeviceVolume.ebs(self.__storage_size)
             )
         ]
 

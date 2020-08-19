@@ -83,13 +83,25 @@ function deploy_rook_ceph() {
 
     kubectl create -f $ceph_manifest_path/common.yaml --kubeconfig "$local_kubeconfig_file_path"
     kubectl create -f $ceph_manifest_path/operator.yaml --kubeconfig "$local_kubeconfig_file_path"
+
+    deploy_finish=""
+    deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
+
+    while [ "$deploy_status" != "$deploy_finish" ]; do
+        echo "rook basic components haven't ready, wait 5 second for next verification"
+        sleep 5
+        deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running --kubeconfig "$local_kubeconfig_file_path")
+    done
+
+    echo "deploy ceph cluster"
+
     kubectl create -f $ceph_manifest_path/cluster.yaml --kubeconfig "$local_kubeconfig_file_path"
 
     deploy_finish=""
     deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running,status.phase!=Succeeded --kubeconfig "$local_kubeconfig_file_path")
 
     while [ "$deploy_status" != "$deploy_finish" ]; do
-        echo "rook components haven't ready, wait 5 second for next verification"
+        echo "rook cluster haven't ready, wait 5 second for next verification"
         sleep 5
         deploy_status=$(kubectl get pods -n rook-ceph --field-selector status.phase!=Running,status.phase!=Succeeded --kubeconfig "$local_kubeconfig_file_path")
     done
