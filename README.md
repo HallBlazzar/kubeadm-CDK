@@ -24,7 +24,7 @@ The following K8s resource will be created as Pods in cluster:
 - etcd, API Server and kube-proxy provisioned by kubeadm
 - CoreDNS
 - [Flannel](https://github.com/coreos/flannel) (CNI Plugin)
-- Ceph storage, Ceph filesystem and Ceph filesystem StorageClass as default persistent storage for cluster(provisioned by [Rook](https://rook.io/docs/rook/v1.4/ceph-filesystem.html))
+- Ceph storage, Ceph filesystem and Ceph filesystem StorageClass(`default-rook-cephfs`) as default persistent storage for cluster(provisioned by [Rook](https://rook.io/docs/rook/v1.4/ceph-filesystem.html))
 
 ## Deployment
 
@@ -130,7 +130,7 @@ The following K8s resource will be created as Pods in cluster:
 
 #### AWS resource management
 
-This project is built on top of AWS __C__loud __D__evelopment __T__oolkit(AWS CDK). AWS CDK is an open source software development framework to model and  provision your cloud application resources using familiar programming languages. While deploying, codes will be converted to AWS CloudFormation(CFN) templates, then deploy as CFN stacks.
+This project is built on top of AWS ***C***loud ***D***evelopment ***T***oolkit(AWS CDK). AWS CDK is an open source software development framework to model and  provision your cloud application resources using familiar programming languages. While deploying, codes will be converted to AWS CloudFormation(CFN) templates, then deploy as CFN stacks.
 
 When you use this project to deploy K8s Cluster, the following CFN stacks will be created under your account(if you don't modify `ENVIRONMENT_NAME` prefix):
 
@@ -141,7 +141,7 @@ When you use this project to deploy K8s Cluster, the following CFN stacks will b
 - `KubernetesHandyManager` - Manager node.
 - `KubernetesHandyWorker` - Worker node.
 
-CDK will automatically decide dependency relations between each stack, and decide order to deploy each stack.
+CDK will automatically decide dependency relations between each stack, then decide order to deploy each stack.
 
 #### K8s level bootstrapping
 
