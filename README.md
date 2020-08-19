@@ -3,7 +3,7 @@
 
 This is a project uses [AWS CDK](https://github.com/aws/aws-cdk) and [kubeamin toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) to deploy **single** master node [Kubernetes](https://kubernetes.io/) (K8s) cluster.
 
-***note: currently, K8s v1.18.8 cluster will be provisioned by latest kubeadm*** 
+***Note: Currently, K8s v1.18.8 cluster will be provisioned by latest kubeadm*** 
 
 ## What will be deployed
 
@@ -105,6 +105,8 @@ The following K8s resource will be created as Pods in cluster:
    ```
 
    The `manager` instance will already have prepare kubeconfig for `kubectl` CLI tool and `helm` to perform any operation to the create K8s cluster. Enjoy it!
+
+   ***Notice: Not until you could see default StorageClass, `default-rook-cephfs`, is created do cluster cluster initialization process done. Please use `kubectl get sc` to verify that when you first time SSH to cluster.***
 
 10. If you'd like to clean up all resources created by this project, simply run the following command in project repository:
 
